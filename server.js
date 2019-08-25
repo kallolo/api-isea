@@ -23,17 +23,6 @@ app.set('secretKey', config.secret);
 app.use(cors());
 
 //router
-
-//home
-router.get('/', function (req, res) {
-    res.json({ message: "berada dihome" });
-});
-//user
-router.get('/users', function (req, res) {
-    User.find({}, function(err, users){
-        res.json(users);
-    });
-});
 //login
 router.post('/login', function(req,res){
     User.findOne({
@@ -42,14 +31,14 @@ router.post('/login', function(req,res){
         if(err) throw err;
 
         if(!user){
-            res.json({ succes: false, message:'User Tidak Ditemukan'});
+            res.json({ success: false, message:'User Tidak Ditemukan'});
         }
         else
         {
             //harusnya passowrd dihash
             if(user.password != req.body.password)
             {
-                res.json({succes: false, message:'Password Salah'});
+                res.json({success: false, message:'Password Salah'});
             }
             else
             {
@@ -60,7 +49,7 @@ router.post('/login', function(req,res){
 
                 //ngirim balik token
                 res.json({
-                    succes : true,
+                    success : true,
                     message : 'Token Berhasil Didapatkan !',
                     token : token
                 })
@@ -69,6 +58,58 @@ router.post('/login', function(req,res){
     });
 });
 
+//home
+router.get('/', function (req, res) {
+    res.json({ message: "berada dihome" });
+});
+
+//.midelware verifikasi token
+//Protecksi route dengan token
+router.use(function(req, res, next){
+    // mengambil token ada beberapa Cara
+// req.body.token || req.query.token || req.headers['authorization']
+    var token = req.headers['authorization'];
+
+    //decode token
+    if(token){
+        jwt.verify(token, app.get('secretKey'), function(err, decoded){
+            if(err)
+            return res.json({success:false, message: 'masalah dengan token'});
+            else{
+                req.decoded =decoded;
+
+                // cek apakah token sudah expired
+                if(decoded.exp <= Date.now()/1000){
+                    return res.status(400).send({
+                        success :false,
+                        message :'token sudah expire',
+                        date    : Date.now()/1000,
+                        exp     : decoded.exp
+                    });
+                }
+                next();
+            }
+        });
+    }else{
+        return res.status(403).send({
+            success:false,
+            message:'token tidak tersedia'
+        });
+    }
+});
+
+//daftar users
+router.get('/users', function (req, res) {
+    User.find({}, function(err, users){
+        res.json(users);
+    });
+});
+
+//lihat profil yang login
+router.get('/profile', function(req, res){
+    // res.json({ message: "cekfungsi" });
+    res.json(req.decoded.user);
+});
 //prefix /api
 app.use('/api', router);
 
