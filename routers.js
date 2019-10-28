@@ -1,17 +1,29 @@
 module.exports = function(app) {
     var auth = require('./middleware/auth'),
-        controller = require('./controller'),
+        IndexController = require('./controllers/IndexController'),
         UsersController   = require('./controllers/UsersController');
 
-    app.route('/')
-        .get(controller.index);
+    //index RestAPI
+    /* url '/' */
+    app.route('/').get(IndexController.index);
+     /* end url '/' */
 
-    app.route('/users')
-        .get(auth.cekToken, controller.users);
-    
-    app.route('/pengguna')
-        .get(auth.cekToken, UsersController.list);
-    
+    /* url '/login' */
     app.route('/login')
-        .post(UsersController.login);
+        .post(UsersController.loginUsers);
+    /* end url '/login' */
+
+    /* url '/user' */
+    app.route('/users')
+        //Ambil data semua user
+        .get(auth.cekToken, UsersController.dataUsers)
+        //Tambah data user
+        .post(auth.cekToken, UsersController.tambahUsers);
+    /* end url '/user' */
+
+    /* url '/user/user_id' */
+    app.route('/users/:user_id')
+        .get(auth.cekToken, UsersController.cariUsers);
+    /* end url '/user/user_id' */
+
 };
