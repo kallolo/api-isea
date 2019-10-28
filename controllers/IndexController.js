@@ -1,6 +1,7 @@
 'use strict';
-var response = require('../respon');
+var respon = require('../respon');
 
 exports.index = function(req, res) {
-    response.berhasil("API ISEA Terhubung", res)
+    var message = "API ISEA Terhubung";
+    res.json({ status: true, code: 200, pesan:message});
 };

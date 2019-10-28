@@ -18,12 +18,16 @@ module.exports = function(app) {
         //Ambil data semua user
         .get(auth.cekToken, UsersController.dataUsers)
         //Tambah data user
-        .post(auth.cekToken, UsersController.tambahUsers);
+        .post(auth.cekToken, UsersController.tambahUsers)
+        //Ubah data user
+        .put(auth.cekToken, UsersController.ubahUsers)
+        //Hapus data user
+        .delete(auth.cekToken, UsersController.hapusUsers);
     /* end url '/user' */
 
-    /* url '/user/user_id' */
-    app.route('/users/:user_id')
+    /* url '/user/id' */
+    app.route('/users/:id')
         .get(auth.cekToken, UsersController.cariUsers);
-    /* end url '/user/user_id' */
+    /* end url '/user/id' */
 
 };
