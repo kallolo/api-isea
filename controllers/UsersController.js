@@ -5,12 +5,13 @@ var respon      = require('../respon');
 var db          = require('../config/db');
 var jwt         = require('jsonwebtoken');
 var secretKey   = require('../config/secretKey');
+var bcrypt      = require('bcrypt');
 
 app.set('secretKey', secretKey.secret);
 
 //Fungsi Tampilkan Semua Users
-exports.dataUsers = function(req, res) {
-    var sql    = "SELECT * FROM users";
+exports.getUsers = function(req, res) {
+    var sql    = "SELECT username, email FROM users";
     db.query(sql, function (error, result, fields){
         if(error){
             console.log(error)
@@ -30,7 +31,7 @@ exports.dataUsers = function(req, res) {
 };
 
 //Fungsi Cari Users
-exports.cariUsers = function(req, res) {
+exports.findUsers = function(req, res) {
     var id     = req.params.id;
     var sql    = "SELECT * FROM users where id = ?";
     db.query(sql,[ id ], function (error, result, fields){
@@ -52,9 +53,10 @@ exports.cariUsers = function(req, res) {
 };
 
 //Fungsi Tambah Users
-exports.tambahUsers = function(req, res) {
+exports.addUsers = function(req, res) {
     var username = req.body.username;
-    var password = req.body.password;
+    var hashedPassword = bcrypt.hashSync(req.body.password, 8);
+    var password = hashedPassword;
     var sql      = "INSERT INTO users (username, password) values (?,?)";
     db.query(sql,[ username, password ],function (error, result, fields){
         if(error){
@@ -67,8 +69,8 @@ exports.tambahUsers = function(req, res) {
 };
 
 //Fungsi Ubah Users
-exports.ubahUsers = function(req, res) {
-    var id       = req.body.id;
+exports.updateUsers = function(req, res) {
+    var id       = req.params.id;
     var username = req.body.username;
     var password = req.body.password;
     var sql      = "UPDATE users SET username = ?, password = ? WHERE id = ?";
@@ -88,8 +90,8 @@ exports.ubahUsers = function(req, res) {
 };
 
 //Fungsi Hapus Users
-exports.hapusUsers = function(req, res) {
-    var id       = req.body.id;
+exports.deleteUsers = function(req, res) {
+    var id       = req.params.id;
     var sql      = "DELETE FROM users WHERE id = ?";
     db.query(sql,[ id ], function (error, result, fields){
         if(error){
@@ -119,13 +121,14 @@ exports.loginUsers = function(req, res) {
         }else{
             if(result.length >0)
             {
-                if(result[0].password != password)
+                var passwordIsValid = bcrypt.compareSync(password, result[0].password);
+                if(!passwordIsValid)
                 {
                     res.json({status: false, pesan:'Password Salah'});
                 }
                 else
                 {
-                    var token = jwt.sign({result}, app.get('secretKey'),{
+                    var token = jwt.sign({id: result[0].id, username: result[0].username, email: result[0].email , role: result[0].role}, app.get('secretKey'),{
                         expiresIn:"24h"
                     })
                     res.json({status: true, pesan:'Berhasil Login' , token: token});
@@ -139,3 +142,11 @@ exports.loginUsers = function(req, res) {
         }
     });
 };
+
+//Fungsi Profile Users
+exports.profileUsers = function(req, res){
+    // res.json(req.user);
+    var result = req.user; // mengabil request login
+    var message = "Berhasil Mendapatkan Profil "+req.user.username;
+    respon.berhasil(result, message, res)
+}

@@ -10,10 +10,11 @@ module.exports = {
     if(token){
         jwt.verify(token, app.get('secretKey'), function(err, decoded){
             if(err)
-            return res.json({success:false, message: 'masalah dengan token'});
+            return res.status(401).json({success:false, message: 'masalah dengan token'});
             else{
-                req.decoded =decoded;
-
+                req.user = decoded;
+                
+                // console.log(req.user);
                 // cek apakah token sudah expired
                 if(decoded.exp <= Date.now()/1000){
                     return res.status(400).send({
