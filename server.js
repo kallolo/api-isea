@@ -26,6 +26,10 @@ app.use('/users', UsersRouter);
 var LoginRouter = require('./routers/LoginRouter');
 app.use('/login', LoginRouter);
 
+//router  /registration
+var RegistrationRouter = require('./routers/RegistrationRouter');
+app.use('/registration', RegistrationRouter);
+
 //router  /profile
 var ProfileRouter = require('./routers/ProfileRouter');
 app.use('/profile', ProfileRouter);

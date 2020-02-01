@@ -143,6 +143,23 @@ exports.loginUsers = function(req, res) {
     });
 };
 
+//Fungsi Registrasi Users
+exports.registrationUsers = function(req, res) {
+    var username        = req.body.username;    
+    var email           = req.body.email;
+    var hashedPassword  = bcrypt.hashSync(req.body.password, 8);
+    var password        = hashedPassword;
+    var sql             = "INSERT INTO users (username, password, email) values (?,?,?)";
+    db.query(sql,[ username, password, email ],function (error, result, fields){
+        if(error){
+            console.log(error)
+        } else {
+            var message = "Berhasil Registrasi!";
+            respon.berhasil(result, message, res)
+        }
+    });
+};
+
 //Fungsi Profile Users
 exports.profileUsers = function(req, res){
     // res.json(req.user);
